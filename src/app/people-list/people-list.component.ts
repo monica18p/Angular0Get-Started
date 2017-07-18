@@ -5,8 +5,6 @@ import { PeopleService } from "../people.service";
 @Component({
   selector: 'app-people-list',
   template: `
-
-  <!-- this is the new syntax for ng-repeat -->
   <ul>
     <li *ngFor="let person of people">
       <a [routerLink]="['/persons', person.id]">
@@ -14,20 +12,23 @@ import { PeopleService } from "../people.service";
       </a>
     </li>
   </ul>
-
-  <!--<app-person-details [person]="selectedPerson"></app-person-details> -->
-
+  <section *ngIf="errorMessag">
+    {{errorMessag}}
+  </section>
   `,
   styleUrls: ['./people-list.component.scss']
 })
 export class PeopleListComponent implements OnInit {
-  // selectedPerson: Person;
+  isLoading: boolean = true;
   people: Person[] = [];
+  errorMessage: String = '';
 
   constructor(private peopleService: PeopleService) { }
 
   ngOnInit() {
-    this.peopleService.getAll().subscribe(p => this.people = p);
+    this.peopleService.getAll().subscribe(
+      p => this.people = p,
+    e => this.errorMessage = e,
+    () => this.isLoading = false);
   }
-
 }

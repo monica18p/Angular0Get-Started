@@ -2,6 +2,8 @@ import { Injectable } from '@angular/core';
 import { Http, Response, RequestOptions, Headers } from '@angular/http';
 import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/map';
+import 'rxjs/add/operator/catch';
+import 'rxjs/add/observable/throw';
 
 import { Person } from './person';
 
@@ -20,7 +22,8 @@ export class PeopleService{
   getAll(): Observable<Person[]> {
     let people$ = this.http
     .get(`${this.baseUrl}/people`, {headers: this.getHeaders()})
-    .map(mapPersons);
+    .map(mapPersons)
+    .catch(handleError);
       return people$;
   }
   
@@ -30,27 +33,15 @@ export class PeopleService{
     return headers;
   }
 
-  // get(id: number) : Observable<Person> {
-  //   let person$ = this.http
-  //   .get(`${this.baseUrl}/people/${id}`, {headers: this.getHeaders()})
-  //   .map(mapPersons);
-  //   return person$;
-  // }
-
   get(id: number): Observable<Person> {
     let person$ = this.http
       .get(`${this.baseUrl}/people/${id}`, {headers: this.getHeaders()})
-      .map(mapPerson);
+      .map(mapPerson)
+      .catch(handleError);
       return person$;
   }
 
   save(person: Person) {
-    // let originalPerson = PEOPLE.find(
-    //   p => p.id === person.id
-    // );
-    // if (originalPerson) Object.assign(
-    //   originalPerson, person
-    // );
     return this
       .http
       .put(`${this.baseUrl}/people/${person.id}`,
@@ -65,6 +56,7 @@ export class PeopleService{
 }
 
 function mapPersons(response: Response): Person[] {
+  // throw new Error('ups! Force choke!');
     return response.json().results.map(toPerson)
   }
 
@@ -87,4 +79,11 @@ function mapPersons(response: Response): Person[] {
 
   function mapPerson(response:Response): Person{
    return toPerson(response.json());
+}
+
+function handleError(error: any) {
+  let errorMsg = error.message || `Yikes! There was a problem with our hyperdrive device and we couldn't retrieve your data!`;
+  console.error(errorMsg);
+
+  return Observable.throw(errorMsg);
 }
